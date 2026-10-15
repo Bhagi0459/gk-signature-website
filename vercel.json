@@ -1,0 +1,21 @@
+{
+  "cleanUrls": true,
+  "headers": [
+    {
+      "source": "/images/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=2592000"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/review",
+      "destination": "https://docs.google.com/forms/d/e/1FAIpQLSegG69G71tKh2UFRkdL7YVXclkFLkHiBAdWFUbSSL9vgmxzog/viewform",
+      "permanent": false
+    }
+  ]
+}
