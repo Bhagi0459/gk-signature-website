@@ -252,9 +252,11 @@
 
     /* ---------- Reviews ---------- */
     .reviews-sec { background: var(--bg-alt); }
-    .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-    @media (max-width: 960px) { .reviews-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 600px) { .reviews-grid { grid-template-columns: 1fr; } }
+    .reviews-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; }
+    .reviews-grid[hidden] { display: none; }
+    .review-card { flex: 0 1 calc((100% - 44px) / 3); min-width: 280px; }
+    @media (max-width: 960px) { .review-card { flex-basis: calc((100% - 22px) / 2); } }
+    @media (max-width: 600px) { .review-card { flex-basis: 100%; min-width: 0; } }
     .review-card { background: var(--card); border-radius: var(--radius); padding: 26px 24px; box-shadow: var(--shadow); position: relative; }
     .review-card::before { content: "\201C"; position: absolute; top: 6px; right: 18px; font-family: "Cormorant Garamond", serif; font-size: 4.5rem; line-height: 1; color: var(--gold-light); opacity: .6; }
     .review-stars { color: #e0a526; letter-spacing: 2px; font-size: 1.05rem; margin-bottom: 10px; }
@@ -408,8 +410,8 @@
           <div class="service-body"><h3>Baby Showers</h3><p>Seemantham &amp; Godh Bharai décor with fresh-flower toranams, custom mom-to-be backdrops and traditional touches.</p></div>
         </article>
         <article class="service reveal">
-          <div class="service-img"><img src="/images/birthday-decor.jpg" alt="Birthday party decoration with balloon arch" loading="lazy"><span class="badge">🎈</span></div>
-          <div class="service-body"><h3>Birthdays</h3><p>Themed backdrops, balloons and floral styling for first birthdays, kids' parties and milestone celebrations.</p></div>
+          <div class="service-img"><img src="/images/car-boot-birthday-1.jpg" alt="Car boot birthday surprise decoration by GK Signature" loading="lazy" style="object-position: center 82%"><span class="badge">🎈</span></div>
+          <div class="service-body"><h3>Birthdays</h3><p>1st birthdays, kids' parties, milestone celebrations and our popular car-boot birthday surprises with lights, balloons, photos and cake.</p></div>
         </article>
         <article class="service reveal">
           <div class="service-img"><img src="/images/cradle-naming-decor.jpg" alt="Baby welcome and naming ceremony decoration" loading="lazy"><span class="badge">👶</span></div>
@@ -462,10 +464,11 @@
         <span class="script">Gallery</span>
         <h2>Details That Shine</h2>
         <div class="divider"></div>
-        <p>A closer look at the flowers, colours and craftsmanship behind our setups. Tap any photo to view it larger.</p>
+        <p>A closer look at the flowers, lights and craftsmanship behind our setups. Tap any photo to view it larger.</p>
       </div>
       <div class="gallery reveal" id="gallery-grid">
         <button><img src="/images/setup-full.jpg" alt="Complete baby shower stage with floral toranams" loading="lazy"></button>
+        <button><img src="/images/car-boot-birthday-1.jpg" alt="Car boot birthday surprise with fairy lights and balloons" loading="lazy"></button>
         <button><img src="/images/golden-bell.jpg" alt="Golden bell detail" loading="lazy"></button>
         <button><img src="/images/mom-backdrop.jpg" alt="Mom-to-be backdrop with garlands" loading="lazy"></button>
         <button><img src="/images/toranam.jpg" alt="Toranam with hanging lantern" loading="lazy"></button>
@@ -526,7 +529,7 @@
       </div>
       <div class="chips reveal">
         <span class="chip">Baby Shower</span><span class="chip">Seemantham</span><span class="chip">Godh Bharai</span><span class="chip">Valaikappu</span>
-        <span class="chip">First Birthday</span><span class="chip">Kids' Birthday</span><span class="chip">Cradle Ceremony</span><span class="chip">Naming Ceremony</span>
+        <span class="chip">First Birthday</span><span class="chip">Kids' Birthday</span><span class="chip">Car Boot Surprise</span><span class="chip">Cradle Ceremony</span><span class="chip">Naming Ceremony</span>
         <span class="chip">Annaprasana</span><span class="chip">Half Saree Function</span><span class="chip">House Warming</span><span class="chip">Anniversary</span>
         <span class="chip">Pooja &amp; Vratham</span><span class="chip">Engagement</span><span class="chip">Haldi &amp; Mehendi</span><span class="chip">Office Celebrations</span>
       </div>
