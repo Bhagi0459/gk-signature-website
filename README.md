@@ -22,14 +22,12 @@ vercel.json         # clean URLs + image caching
 Edit `index.html` (or replace images), commit, and push to `main`. Update `<lastmod>` in `sitemap.xml` for big content changes.
 
 ## Image credits / placeholders
-Service-card images for Cradle & Naming, Corporate, Private Events and Flower Décor are free-licence placeholders from [Unsplash](https://unsplash.com/license). Replace them with GK Signature's own event photos (same filenames) when available:
+Service-card images for Cradle & Naming and Corporate are free-licence placeholders from [Unsplash](https://unsplash.com/license). Replace them with GK Signature's own event photos (same filenames) when available:
 
 | File | Unsplash photo |
 |---|---|
 | images/cradle-naming-decor.jpg | photo-1644785421448-e1b038f2381e |
 | images/corporate-event-decor.jpg | photo-1768508947591-b650dacc70a4 |
-| images/pooja-private-decor.jpg | photo-1756395959307-d546b7947e3d |
-| images/marigold-garlands.jpg | photo-1789971649652-ae5dfeeaa7b4 |
 
 All other photos are GK Signature's own work. Personal photo cards in customer setups are blurred so no faces are visible; never publish customer faces or number plates.
 
