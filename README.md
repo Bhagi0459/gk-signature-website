@@ -1,6 +1,6 @@
 # GK Signature – Website
 
-Static one-page website for **GK Signature**, an event décor & styling business in Hyderabad.
+Static website for **GK Signature Events • Decors**, an event decoration business in Hyderabad.
 
 - Live: https://gksignature.vercel.app
 - Instagram: https://www.instagram.com/gksignatureevents/
