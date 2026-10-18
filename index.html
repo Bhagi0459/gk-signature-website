@@ -327,6 +327,28 @@
     .foot-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
     .foot-brand img { width: 56px; height: 56px; }
     .foot-brand span { font-family: "Cormorant Garamond", serif; font-size: 1.6rem; color: #fff; font-weight: 700; }
+
+    /* ---------- URAB family strip (shown only on urab.in) ---------- */
+    .urab-strip { border-top: 1px solid #2a211a; padding: 30px 0 26px; margin-bottom: 4px; text-align: center; }
+    .urab-strip[hidden] { display: none; }
+    .urab-home { display: inline-flex; align-items: center; gap: 14px; margin-bottom: 22px; text-align: left; }
+    .urab-home img { height: 64px; width: auto; }
+    .urab-home span { color: #d9caae; font-size: .95rem; line-height: 1.35; }
+    .urab-home strong { color: var(--gold-light); }
+    .urab-home small { display: block; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: #9c8d78; }
+    .urab-strip h4 { margin-bottom: 14px; }
+    .urab-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 860px; margin: 0 auto; }
+    @media (max-width: 680px) { .urab-cards { grid-template-columns: 1fr; } }
+    .urab-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 18px 14px; border-radius: 16px; background: #1a140f; border: 1px solid #2a211a; transition: transform .2s, border-color .2s; }
+    .urab-card:hover { transform: translateY(-3px); border-color: #d6249f; }
+    .urab-card img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: #fff; border: 1px solid #2a211a; }
+    .urab-card img.dark { object-fit: contain; padding: 5px; background: #14110e; }
+    .urab-card span { display: flex; flex-direction: column; line-height: 1.3; }
+    .urab-card strong { color: #fff; font-size: .9rem; font-weight: 600; }
+    .urab-card small { color: #9c8d78; font-size: .78rem; }
+    .urab-card em { font-style: normal; display: inline-flex; align-items: center; gap: 5px; padding: 6px 15px; border-radius: 999px; color: #fff; font-size: .78rem; font-weight: 600; background: linear-gradient(45deg, #f09433, #dc2743 50%, #bc1888); }
+    .urab-card em svg { width: 14px; height: 14px; }
+    .urab-links { margin-top: 18px; font-size: .85rem; }
     .copy { border-top: 1px solid #2a211a; padding-top: 20px; text-align: center; font-size: .82rem; }
 
     /* ---------- Floating buttons ---------- */
@@ -691,6 +713,17 @@
           </ul>
         </div>
       </div>
+      <!-- URAB family strip: hidden on gksignature.vercel.app, shown by the script below when opened on urab.in -->
+      <div class="urab-strip" id="urab-strip" hidden>
+        <a class="urab-home" href="https://urab.in/"><img src="https://urab.in/images/logo.png" alt="URAB" loading="lazy"><span>Part of the <strong>URAB</strong> family<small>Unleash Real Art &amp; Being</small></span></a>
+        <h4>Follow us on Instagram</h4>
+        <div class="urab-cards">
+            <a class="urab-card" href="https://www.instagram.com/urabindia/" target="_blank" rel="noopener"><img class="dark" src="https://urab.in/images/logo.png" alt="URAB logo" loading="lazy"><span><strong>URAB</strong><small>@urabindia</small></span><em><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.6" cy="6.4" r="1.3" fill="currentColor"/></svg>Follow</em></a>
+            <a class="urab-card" href="https://www.instagram.com/naa_cheti_kala/" target="_blank" rel="noopener"><img src="https://urab.in/images/naa-cheti-kala/logo.jpg" alt="Naa Cheti Kala logo" loading="lazy"><span><strong>Naa Cheti Kala</strong><small>@naa_cheti_kala</small></span><em><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.6" cy="6.4" r="1.3" fill="currentColor"/></svg>Follow</em></a>
+            <a class="urab-card" href="https://www.instagram.com/gksignatureevents/" target="_blank" rel="noopener"><img src="images/logo.png?v=2" alt="GK Signature Events • Decors logo" loading="lazy"><span><strong>GK Signature Events • Decors</strong><small>@gksignatureevents</small></span><em><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.6" cy="6.4" r="1.3" fill="currentColor"/></svg>Follow</em></a>
+        </div>
+        <div class="urab-links"><a href="https://urab.in/">URAB home</a> &nbsp;·&nbsp; <a href="https://urab.in/naa-cheti-kala">Naa Cheti Kala</a> &nbsp;·&nbsp; <a href="https://urab.in/gk-signature/">GK Signature</a></div>
+      </div>
       <div class="copy">© <span id="yr"></span> GK Signature Events • Decors. All rights reserved.</div>
     </div>
   </footer>
@@ -711,6 +744,8 @@
 
   <script>
     document.getElementById("yr").textContent = new Date().getFullYear();
+    // Show the URAB family strip only when this site is served through urab.in/gk-signature/
+    if (/(^|\.)urab\.in$/.test(location.hostname)) document.getElementById("urab-strip").hidden = false;
 
     // Nav background on scroll + mobile menu
     const nav = document.getElementById("nav");
