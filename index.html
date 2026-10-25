@@ -363,33 +363,45 @@
     /* ---------- Opening curtain: ivory satin drapes like the logo (built by the script after <body>) ---------- */
     .stage { position: fixed; inset: 0; z-index: 200; overflow: hidden; cursor: pointer;
       background: radial-gradient(ellipse at 50% 45%, #4a1420 0%, #2a0a10 55%, #12060a 100%); }
-    /* Each drape sits in a .panel whose drop-shadows draw a gold edge that follows the tie-back curve. */
-    .panel { position: absolute; top: 0; bottom: 0; width: 51%;
-      filter: drop-shadow(2px 0 0 #d4a94f) drop-shadow(-2px 0 0 #d4a94f) drop-shadow(0 2px 0 #d4a94f) drop-shadow(10px 0 16px rgba(40, 10, 10, .45)); }
+    /* Each drape is a row of fabric pleats (built by the script). Opening narrows the panel so the pleats
+       bunch together like real cloth, while the inner edge curves into a gold tassel tie-back. */
+    .panel { position: absolute; top: 0; bottom: 0; width: 51%; transition: width 1.5s cubic-bezier(.6, 0, .2, 1);
+      filter: drop-shadow(2px 0 0 #c99a3e) drop-shadow(-2px 0 0 #c99a3e) drop-shadow(12px 0 18px rgba(30, 8, 8, .5)); }
     .panel.left { left: 0; }
-    .panel.right { right: 0; filter: drop-shadow(2px 0 0 #d4a94f) drop-shadow(-2px 0 0 #d4a94f) drop-shadow(0 2px 0 #d4a94f) drop-shadow(-10px 0 16px rgba(40, 10, 10, .45)); }
-    .curtain { position: absolute; inset: 0; will-change: clip-path;
-      transition: clip-path 2s cubic-bezier(.65, 0, .25, 1);
+    .panel.right { right: 0; filter: drop-shadow(2px 0 0 #c99a3e) drop-shadow(-2px 0 0 #c99a3e) drop-shadow(-12px 0 18px rgba(30, 8, 8, .5)); }
+    .curtain { position: absolute; inset: 0; display: flex; overflow: hidden; will-change: clip-path; transition: clip-path 1.5s cubic-bezier(.6, 0, .2, 1); }
+    .curtain.left { clip-path: polygon(0 0, 100% 0%, 100% 12%, 100% 24%, 100% 36%, 100% 46%, 100% 54%, 100% 62%, 100% 72%, 100% 84%, 100% 100%, 0 100%); }
+    .curtain.right { clip-path: polygon(100% 0, 0% 0%, 0% 12%, 0% 24%, 0% 36%, 0% 46%, 0% 54%, 0% 62%, 0% 72%, 0% 84%, 0% 100%, 100% 100%); flex-direction: row-reverse; }
+    .pleats { display: flex; flex: 1; transform-origin: top center; animation: breathe 5s ease-in-out infinite; }
+    .curtain.right .pleats { flex-direction: row-reverse; animation-delay: -2.5s; }
+    @keyframes breathe { 50% { transform: skewX(.5deg); } }
+    /* one fold: shadow in the valley, a soft satin sheen on the crest */
+    .pleat { flex: 1 1 0; min-width: 0; transition: filter 1.5s cubic-bezier(.6, 0, .2, 1);
       background:
-        linear-gradient(180deg, rgba(255,250,240,.55) 0%, transparent 22%, transparent 70%, rgba(120,84,40,.35) 100%),
-        repeating-linear-gradient(90deg, #d9c19a 0, #efdfc3 1.6%, #fffaf0 2.6%, #fbf1df 3.4%, #e6d2ae 5%, #cdb185 7%); }
-    .curtain.left { clip-path: polygon(0 0, 100% 0%, 100% 10%, 100% 20%, 100% 30%, 100% 40%, 100% 48%, 100% 55%, 100% 62%, 100% 70%, 100% 80%, 100% 90%, 100% 100%, 0 100%); }
-    .curtain.right { clip-path: polygon(100% 0, 0% 0%, 0% 10%, 0% 20%, 0% 30%, 0% 40%, 0% 48%, 0% 55%, 0% 62%, 0% 70%, 0% 80%, 0% 90%, 0% 100%, 100% 100%); }
-    /* gold + burgundy trim on the inner edges */
-    .curtain::before { content: ""; position: absolute; top: 0; bottom: 0; width: 16px;
+        linear-gradient(90deg, rgba(70, 45, 20, .55) 0%, rgba(120, 85, 45, .18) 14%, rgba(255, 252, 244, .0) 30%,
+          rgba(255, 253, 246, .75) 46%, rgba(255, 250, 238, .25) 58%, rgba(150, 110, 60, .2) 78%, rgba(70, 45, 20, .6) 100%),
+        var(--fab, #ecdcbc); }
+    /* fabric grain, light from above, weight at the hem */
+    .grain { position: absolute; inset: 0; pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(255, 250, 238, .45) 0%, transparent 18%, transparent 72%, rgba(60, 35, 15, .35) 100%),
+        repeating-linear-gradient(90deg, rgba(90, 60, 25, .05) 0 1px, transparent 1px 3px),
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .12  0 0 0 .28 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+      mix-blend-mode: multiply; opacity: .6; }
+    /* gold + burgundy trim on the leading edge */
+    .curtain::before { content: ""; position: absolute; top: 0; bottom: 0; width: 14px; z-index: 2;
       background: linear-gradient(90deg, #8c6420, #f3dc9d 30%, #c99a3e 45%, #7a1526 46% 70%, #a87a2a 71%, #f3dc9d 85%, #8c6420); }
     .curtain.left::before { right: 0; } .curtain.right::before { left: 0; transform: scaleX(-1); }
+    .curtain .bulb { z-index: 3; }
     /* tie-back tassel */
-    .tassel { position: absolute; top: 76%; width: 34px; height: 90px; z-index: 2;
+    .tassel { position: absolute; width: 30px; height: 84px; z-index: 4;
       background: radial-gradient(circle at 50% 12%, #f3dc9d 0 9px, transparent 10px),
                   linear-gradient(180deg, transparent 22px, #c99a3e 22px 30px, transparent 30px),
                   repeating-linear-gradient(90deg, #d4a94f 0 2px, #8c6420 2px 4px);
-      -webkit-mask: linear-gradient(180deg, #000 0 30px, #000 30px) , radial-gradient(circle at 50% 100%, transparent 0, #000 0);
-      clip-path: polygon(50% 0, 62% 26%, 100% 100%, 0 100%, 38% 26%); filter: drop-shadow(0 4px 6px rgba(0,0,0,.35)); }
-    .tassel { transition: left 2s cubic-bezier(.65, 0, .25, 1), right 2s cubic-bezier(.65, 0, .25, 1), top 2s cubic-bezier(.65, 0, .25, 1); }
-    .panel.left .tassel { left: calc(100% - 42px); top: 70%; } .panel.right .tassel { right: calc(100% - 42px); top: 70%; }
-
-    .valance { position: absolute; left: 0; right: 0; top: 0; height: 170px; z-index: 3; transition: transform 1.4s cubic-bezier(.77, 0, .18, 1) .45s; }
+      clip-path: polygon(50% 0, 62% 26%, 100% 100%, 0 100%, 38% 26%); filter: drop-shadow(0 4px 6px rgba(0,0,0,.4));
+      transition: left 1.5s cubic-bezier(.6, 0, .2, 1), right 1.5s cubic-bezier(.6, 0, .2, 1), top 1.5s cubic-bezier(.6, 0, .2, 1); }
+    .panel.left .tassel { left: calc(100% - 38px); top: 66%; } .panel.right .tassel { right: calc(100% - 38px); top: 66%; }
+    .valance { position: absolute; left: 0; right: 0; top: 0; height: 170px; z-index: 3; transition: transform 1s cubic-bezier(.77, 0, .18, 1) .35s; }
     .rod { position: absolute; left: 0; right: 0; top: 14px; height: 10px; border-radius: 5px; z-index: 2;
       background: linear-gradient(180deg, #f3dc9d, #c99a3e 50%, #8c6420); box-shadow: 0 3px 8px rgba(0,0,0,.4); }
     .swag { position: absolute; top: 12px; height: 120px; border-radius: 0 0 50% 50% / 0 0 100% 100%; z-index: 1;
@@ -418,13 +430,16 @@
     @keyframes markIn { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
     @keyframes blink { 50% { opacity: .55; } }
 
-    .stage.open { cursor: default; pointer-events: none; background: transparent; transition: background .7s ease .4s; }
-    .stage.open .curtain.left { clip-path: polygon(0 0, 44% 0%, 36% 10%, 28% 20%, 21% 30%, 15% 40%, 10% 48%, 7% 55%, 8% 62%, 10% 70%, 13% 80%, 16% 90%, 19% 100%, 0 100%); }
-    .stage.open .curtain.right { clip-path: polygon(100% 0, 56% 0%, 64% 10%, 72% 20%, 79% 30%, 85% 40%, 90% 48%, 93% 55%, 92% 62%, 90% 70%, 87% 80%, 84% 90%, 81% 100%, 100% 100%); }
-    .stage.open .panel.left .tassel { left: calc(7% - 14px); top: 52%; }
-    .stage.open .panel.right .tassel { right: calc(7% - 14px); top: 52%; }
-    .stage.open .stage-mark { opacity: 0; transform: scale(1.15); }
-    .stage.gone { opacity: 0; transition: opacity .8s ease; }
+    .stage.open { cursor: default; pointer-events: none; background: transparent; transition: background .5s ease .3s; }
+    .stage.open .panel { width: 17%; }
+    @media (max-width: 700px) { .stage.open .panel { width: 22%; } }
+    .stage.open .pleat { filter: brightness(.9) contrast(1.18); }
+    .stage.open .curtain.left { clip-path: polygon(0 0, 100% 0%, 96% 12%, 84% 24%, 66% 36%, 50% 46%, 44% 54%, 50% 62%, 64% 72%, 78% 84%, 88% 100%, 0 100%); }
+    .stage.open .curtain.right { clip-path: polygon(100% 0, 0% 0%, 4% 12%, 16% 24%, 34% 36%, 50% 46%, 56% 54%, 50% 62%, 36% 72%, 22% 84%, 12% 100%, 100% 100%); }
+    .stage.open .panel.left .tassel { left: calc(44% - 15px); top: 51%; }
+    .stage.open .panel.right .tassel { right: calc(44% - 15px); top: 51%; }
+    .stage.open .stage-mark { opacity: 0; transform: scale(1.12); }
+    .stage.gone { opacity: 0; transition: opacity .6s ease; }
 
     /* ---------- Reveal ---------- */
     .reveal { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s ease; }
@@ -439,7 +454,7 @@
 <body>
   <script>
     // Opening curtain: ivory satin drapes, flower garland, lantern and fairy lights, matching the logo.
-    // Opens by itself shortly after load; plays once per visit, skipped for reduced motion. Tap or any key opens it early.
+    // Opens by itself about a second after the page is ready; plays once per visit, skipped for reduced motion. Tap or any key opens it early.
     (function () {
       var seen = false;
       try { seen = sessionStorage.getItem('gk-curtain') === '1'; sessionStorage.setItem('gk-curtain', '1'); } catch (e) {}
@@ -459,12 +474,24 @@
       var stage = document.createElement('div');
       stage.className = 'stage';
       stage.setAttribute('aria-hidden', 'true');
-      stage.innerHTML = '<div class="panel left"><div class="curtain left"></div><span class="tassel"></span></div>' +
-        '<div class="panel right"><div class="curtain right"></div><span class="tassel"></span></div>' +
+      stage.innerHTML = '<div class="panel left"><div class="curtain left"><div class="pleats"></div><div class="grain"></div></div><span class="tassel"></span></div>' +
+        '<div class="panel right"><div class="curtain right"><div class="pleats"></div><div class="grain"></div></div><span class="tassel"></span></div>' +
         '<div class="valance"><div class="rod"></div><div class="garland"></div></div>' +
         '<div class="stage-mark"><img src="images/logo.png?v=2" alt=""><b>GK Signature</b><small>Events • Decors</small><em>Welcome</em></div>';
       var val = stage.querySelector('.valance'), gar = stage.querySelector('.garland');
 
+      // Fabric pleats: uneven widths and slightly different ivory tones, like real draped satin.
+      var tones = ['#efe0c2', '#ebd9b7', '#f2e5ca', '#e8d5b1', '#eedfbf'];
+      stage.querySelectorAll('.pleats').forEach(function (row) {
+        var count = W < 600 ? 9 : 16;
+        for (var q = 0; q < count; q++) {
+          var pl = document.createElement('i');
+          pl.className = 'pleat';
+          pl.style.flexGrow = (0.7 + Math.random() * 0.7).toFixed(2);
+          pl.style.setProperty('--fab', tones[q % tones.length]);
+          row.appendChild(pl);
+        }
+      });
       // Draped swags across the rod
       var n = W < 600 ? 3 : 5, sw = W / n;
       for (var i = 0; i < n; i++) {
@@ -543,13 +570,14 @@
         opened = true;
         stage.classList.add('open');
         document.documentElement.style.overflow = '';
-        setTimeout(function () { stage.classList.add('gone'); }, 2700);
-        setTimeout(function () { stage.remove(); }, 3600);
+        setTimeout(function () { stage.classList.add('gone'); }, 1900);
+        setTimeout(function () { stage.remove(); }, 2600);
       }
       stage.addEventListener('click', open);
       addEventListener('keydown', open, { once: true });
-      addEventListener('load', function () { setTimeout(open, 1600); });
-      setTimeout(open, 5000); // never hold the page longer than this, even on slow connections
+      var go = function () { setTimeout(open, 900); };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+      setTimeout(open, 2500); // never hold the page longer than this
     })();
   </script>
 
