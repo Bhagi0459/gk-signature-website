@@ -401,6 +401,8 @@
       clip-path: polygon(50% 0, 62% 26%, 100% 100%, 0 100%, 38% 26%); filter: drop-shadow(0 4px 6px rgba(0,0,0,.4));
       transition: left 1.5s cubic-bezier(.6, 0, .2, 1), right 1.5s cubic-bezier(.6, 0, .2, 1), top 1.5s cubic-bezier(.6, 0, .2, 1); }
     .panel.left .tassel { left: calc(100% - 38px); top: 66%; } .panel.right .tassel { right: calc(100% - 38px); top: 66%; }
+    /* Canvas drapes (cloth simulation); the .panel drapes above are the fallback when canvas is unavailable */
+    .drapes { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
     .valance { position: absolute; left: 0; right: 0; top: 0; height: 170px; z-index: 3; transition: transform 1s cubic-bezier(.77, 0, .18, 1) .35s; }
     .rod { position: absolute; left: 0; right: 0; top: 14px; height: 10px; border-radius: 5px; z-index: 2;
       background: linear-gradient(180deg, #f3dc9d, #c99a3e 50%, #8c6420); box-shadow: 0 3px 8px rgba(0,0,0,.4); }
@@ -474,10 +476,14 @@
       var stage = document.createElement('div');
       stage.className = 'stage';
       stage.setAttribute('aria-hidden', 'true');
-      stage.innerHTML = '<div class="panel left"><div class="curtain left"><div class="pleats"></div><div class="grain"></div></div><span class="tassel"></span></div>' +
-        '<div class="panel right"><div class="curtain right"><div class="pleats"></div><div class="grain"></div></div><span class="tassel"></span></div>' +
+      var cv = document.createElement('canvas');
+      var cloth = drapes(cv);
+      stage.innerHTML = (cloth ? '' :
+        '<div class="panel left"><div class="curtain left"><div class="pleats"></div><div class="grain"></div></div><span class="tassel"></span></div>' +
+        '<div class="panel right"><div class="curtain right"><div class="pleats"></div><div class="grain"></div></div><span class="tassel"></span></div>') +
         '<div class="valance"><div class="rod"></div><div class="garland"></div></div>' +
         '<div class="stage-mark"><img src="images/logo.png?v=2" alt=""><b>GK Signature</b><small>Events • Decors</small><em>Welcome</em></div>';
+      if (cloth) { cv.className = 'drapes'; stage.insertBefore(cv, stage.firstChild); }
       var val = stage.querySelector('.valance'), gar = stage.querySelector('.garland');
 
       // Fabric pleats: uneven widths and slightly different ivory tones, like real draped satin.
@@ -564,10 +570,12 @@
 
       document.body.appendChild(stage);
       document.documentElement.style.overflow = 'hidden';
+      if (cloth) cloth.run(stage);
       var opened = false;
       function open() {
         if (opened) return;
         opened = true;
+        if (cloth) cloth.open();
         stage.classList.add('open');
         document.documentElement.style.overflow = '';
         setTimeout(function () { stage.classList.add('gone'); }, 1900);
@@ -578,6 +586,172 @@
       var go = function () { setTimeout(open, 900); };
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
       setTimeout(open, 2500); // never hold the page longer than this
+
+      // Ivory satin drapes as a cloth simulation: a grid of points under gravity, joined by links that resist
+      // stretching but not squashing, so the fabric buckles into folds as the rod gathers it and the tie-back
+      // pulls it in. Each side is simulated as the left drape and mirrored for the right.
+      function drapes(cv) {
+        var ctx = cv.getContext && cv.getContext('2d');
+        if (!ctx) return null;
+        var H = Math.max(window.innerHeight, 320), dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+        ctx.scale(dpr, dpr);
+        var phone = W < 600, C = phone ? 13 : 22, R = 16, K = 3, P = phone ? 5 : 8;
+        var half = W / 2 + 4, top = 18, dx = half / (C - 1), dy = (H - top + 12) / (R - 1);
+        var gather = W * (phone ? 0.24 : 0.17), tieY = H * 0.52, tieTo = W * (phone ? 0.13 : 0.1), rt = Math.min(R - 3, Math.max(2, Math.round((tieY - top) / dy)));
+        var G = 0.4 * H / 800, DUR = 1500;
+
+        function side(s) {
+          var pts = [], ph = [];
+          for (var r = 0; r < R; r++) for (var c = 0; c < C; c++) {
+            var x = c * dx, y = top + r * dy;
+            pts.push({ x: x, y: y, px: x, py: y, ox: x });
+          }
+          // uneven pleat spacing, different on each side
+          var a = Math.random() * 6, b = Math.random() * 6;
+          for (var i = 0; i <= (C - 1) * K; i++) { var u = i / ((C - 1) * K); ph.push(0.18 * Math.sin(u * 7 + a) + 0.1 * Math.sin(u * 17 + b)); }
+          return { s: s, pts: pts, ph: ph, wob: Math.random() * 6 };
+        }
+        var sides = [side(0), side(1)];
+        // motion runs on simulated time, so a stalled tab resumes smoothly instead of jumping
+        var simT = 0, openAt = -1, last = 0, acc = 0, tie = 0;
+
+        function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+        function link(a, b, rest) {
+          var ex = b.x - a.x, ey = b.y - a.y, d = Math.sqrt(ex * ex + ey * ey);
+          if (d <= rest) return; // cloth folds freely when squashed
+          var k = (d - rest) / d * 0.5;
+          a.x += ex * k; a.y += ey * k; b.x -= ex * k; b.y -= ey * k;
+        }
+
+        function step(sd, now) {
+          var e = openAt < 0 ? 0 : ease(Math.min(1, (now - openAt) / DUR));
+          var e2 = openAt < 0 ? 0 : ease(Math.max(0, Math.min(1, (now - openAt - 150) / (DUR - 150))));
+          var pts = sd.pts, i, p, r, c, wind = Math.sin(now / 900 + sd.wob) * 0.05;
+          for (i = C; i < pts.length; i++) {
+            p = pts[i];
+            var vx = (p.x - p.px) * 0.97, vy = (p.y - p.py) * 0.97;
+            p.px = p.x; p.py = p.y;
+            p.x += vx + wind * (i / pts.length); p.y += vy + G;
+          }
+          for (c = 0; c < C; c++) { p = pts[c]; p.x = p.ox + (c * gather / (C - 1) - p.ox) * e; p.y = top; }
+          var tx = half + (tieTo - half) * e2;
+          for (var it = 0; it < 8; it++) {
+            for (r = 0; r < R; r++) for (c = 0; c < C; c++) {
+              i = r * C + c;
+              if (c < C - 1) link(pts[i], pts[i + 1], dx);
+              if (r < R - 1) link(pts[i], pts[i + C], dy);
+            }
+            for (c = 0; c < C; c++) { pts[c].x = pts[c].px = pts[c].ox + (c * gather / (C - 1) - pts[c].ox) * e; pts[c].y = top; }
+            if (e2 > 0) for (c = 0; c < C; c++) {
+              p = pts[rt * C + c];
+              if (p.x > tx) p.x = tx;
+              p.y += (tieY - p.y) * 0.25 * e2;
+            }
+            for (i = 0; i < pts.length; i++) if (pts[i].x < -2) pts[i].x = -2;
+          }
+          return e2;
+        }
+
+        var bulb = document.createElement('canvas'); bulb.width = bulb.height = 32;
+        var bg = bulb.getContext('2d'), gr = bg.createRadialGradient(16, 16, 0, 16, 16, 16);
+        gr.addColorStop(0, '#fffbe8'); gr.addColorStop(0.18, '#ffe9a8'); gr.addColorStop(0.45, 'rgba(255,200,90,.45)'); gr.addColorStop(1, 'rgba(255,190,80,0)');
+        bg.fillStyle = gr; bg.fillRect(0, 0, 32, 32);
+
+        function draw(sd, now, e2) {
+          var pts = sd.pts, s = sd.s, r, c, k;
+          function X(x) { return s ? W - x : x; }
+          function at(r, c) { return pts[r * C + c]; }
+          // silhouette with a soft shadow; also fills any hairline gaps between facets
+          ctx.beginPath();
+          for (c = 0; c < C; c++) ctx.lineTo(X(at(0, c).x), at(0, c).y);
+          for (r = 1; r < R; r++) ctx.lineTo(X(at(r, C - 1).x), at(r, C - 1).y);
+          for (c = C - 2; c >= 0; c--) ctx.lineTo(X(at(R - 1, c).x), at(R - 1, c).y);
+          for (r = R - 2; r > 0; r--) ctx.lineTo(X(at(r, 0).x), at(r, 0).y);
+          ctx.closePath();
+          ctx.save();
+          ctx.shadowColor = 'rgba(30, 8, 8, .55)'; ctx.shadowBlur = 26; ctx.shadowOffsetX = s ? -10 : 10;
+          ctx.fillStyle = '#cdb994'; ctx.fill();
+          ctx.restore();
+          // satin facets: pleat sheen across the width, deeper folds where the cloth is bunched, light from above
+          for (r = 0; r < R - 1; r++) {
+            var a0 = at(r, 0), v = (r + 0.5) / (R - 1), vf = 1.05 - 0.26 * v * v + (r === 0 ? 0.04 : 0);
+            for (c = 0; c < C - 1; c++) {
+              var A = at(r, c), B = at(r, c + 1), D = at(r + 1, c), E = at(r + 1, c + 1);
+              for (k = 0; k < K; k++) {
+                var f0 = k / K, f1 = (k + 1) / K;
+                var x0 = A.x + (B.x - A.x) * f0, y0 = A.y + (B.y - A.y) * f0, x1 = A.x + (B.x - A.x) * f1, y1 = A.y + (B.y - A.y) * f1;
+                var x2 = D.x + (E.x - D.x) * f1, y2 = D.y + (E.y - D.y) * f1, x3 = D.x + (E.x - D.x) * f0, y3 = D.y + (E.y - D.y) * f0;
+                var j = c * K + k, u = (j + 0.5) / ((C - 1) * K);
+                var w = (Math.abs(x1 - x0) + Math.abs(x2 - x3)) / 2 + 0.01, comp = Math.min(8, Math.max(1, dx / K / w));
+                var sv = Math.cos(2 * Math.PI * (P * u + sd.ph[j]));
+                var tilt = ((x3 + x2) - (x0 + x1)) / 2 / dy * (s ? -1 : 1);
+                var f = (0.88 + (0.1 + 0.05 * (comp - 1)) * sv) * vf * Math.max(0.55, 1 - 0.07 * (comp - 1)) - 0.1 * tilt;
+                var spec = Math.pow(Math.max(0, sv), 4) * 0.16 / comp;
+                ctx.fillStyle = 'rgb(' + Math.min(255, 240 * f + 255 * spec | 0) + ',' + Math.min(255, 224 * f + 250 * spec | 0) + ',' + Math.min(255, 192 * f + 235 * spec | 0) + ')';
+                ctx.beginPath();
+                ctx.moveTo(X(x0), y0); ctx.lineTo(X(x1), y1); ctx.lineTo(X(x2), y2); ctx.lineTo(X(x3), y3);
+                ctx.fill();
+              }
+            }
+          }
+          // gold and burgundy trim down the leading edge and along the hem
+          function edge(list, wd, col) {
+            ctx.beginPath();
+            list.forEach(function (p, n) { n ? ctx.lineTo(X(p.x), p.y) : ctx.moveTo(X(p.x), p.y); });
+            ctx.lineWidth = wd; ctx.strokeStyle = col; ctx.stroke();
+          }
+          var lead = [], hem = [];
+          for (r = 0; r < R; r++) lead.push(at(r, C - 1));
+          for (c = 0; c < C; c++) hem.push(at(R - 1, c));
+          ctx.lineJoin = 'round';
+          edge(lead, 12, '#c99a3e'); edge(lead, 4, '#7a1526'); edge(lead, 1.2, '#f3dc9d');
+          edge(hem, 6, '#c99a3e');
+          // fairy lights just inside the leading edge
+          for (r = 3; r < R - 1; r++) {
+            var p = at(r, C - 1), q = at(r, C - 2), bx = p.x + (q.x - p.x) * 0.45 - (s ? -1 : 1) * 4;
+            ctx.globalAlpha = 0.65 + 0.35 * Math.sin(now / 280 + r * 1.7 + s);
+            ctx.drawImage(bulb, X(bx) - 12, p.y - 12, 24, 24);
+          }
+          ctx.globalAlpha = 1;
+          // gold tie-back cord and tassel
+          if (e2 > 0.55) {
+            var t = at(rt, C - 1), cx = t.x + 8;
+            ctx.globalAlpha = Math.min(1, (e2 - 0.55) * 4);
+            ctx.beginPath(); ctx.moveTo(X(-4), tieY - 3);
+            ctx.quadraticCurveTo(X(cx * 0.5), tieY + 10, X(cx), tieY);
+            ctx.lineWidth = 7; ctx.strokeStyle = '#c99a3e'; ctx.stroke();
+            ctx.lineWidth = 2; ctx.strokeStyle = '#f3dc9d'; ctx.stroke();
+            var hx = X(cx);
+            ctx.fillStyle = '#c99a3e'; ctx.beginPath(); ctx.arc(hx, tieY + 4, 8, 0, 7); ctx.fill();
+            ctx.fillStyle = '#f3dc9d'; ctx.beginPath(); ctx.arc(hx - 2, tieY + 2, 3, 0, 7); ctx.fill();
+            var sw = Math.sin(now / 400 + s) * 3;
+            for (k = -6; k <= 6; k += 2) {
+              ctx.beginPath(); ctx.moveTo(hx + k * 0.4, tieY + 12);
+              ctx.lineTo(hx + k * 1.4 + sw, tieY + 62);
+              ctx.lineWidth = 2; ctx.strokeStyle = k % 4 ? '#8c6420' : '#d4a94f'; ctx.stroke();
+            }
+            ctx.fillStyle = '#7a1526'; ctx.fillRect(hx - 5, tieY + 12, 10, 5);
+            ctx.globalAlpha = 1;
+          }
+        }
+
+        function frame(now) {
+          if (!cv.isConnected) return;
+          if (!last) last = now;
+          acc = Math.min(acc + now - last, 50); last = now;
+          while (acc >= 16) { acc -= 16; simT += 16; tie = step(sides[0], simT); step(sides[1], simT); }
+          if (openAt < 0 || simT - openAt < DUR + 600) {
+            ctx.clearRect(0, 0, W, H);
+            draw(sides[0], simT, tie); draw(sides[1], simT, tie);
+          }
+          requestAnimationFrame(frame);
+        }
+        return {
+          run: function () { requestAnimationFrame(frame); },
+          open: function () { openAt = simT; }
+        };
+      }
     })();
   </script>
 
